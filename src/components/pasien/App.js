@@ -33,6 +33,7 @@ import Checkout from './page-content/Checkout';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarCheck } from '@fortawesome/free-regular-svg-icons';
+import SuccessRegist from './page-content/Regist-Step/SuccessRegist';
 
 class App extends Component {
     constructor(props) {
@@ -132,7 +133,7 @@ class App extends Component {
                                         </li>
                                         <li className={this.state.path === '/' ? 'active' : ''} aria-haspopup="true">
                                             <Link to="/registrasi" onClick={this.active} className={this.state.path === '/registrasi' ? 'active' : ''} >
-                                            <FontAwesomeIcon icon={faCalendarCheck} /> Registrasi
+                                                <FontAwesomeIcon icon={faCalendarCheck} /> Registrasi
                                             </Link>
                                         </li>
                                     </ul>
@@ -144,6 +145,9 @@ class App extends Component {
 
                     <div className='main-content horizontal-content'>
                         <Switch>
+                            <Route path="/registrasi/success">
+                                <SuccessRegist />
+                            </Route>
                             <Route path="/registrasi/checkout" render={(props) => <Checkout {...props} />}>
                             </Route>
                             <Route path="/registrasi">

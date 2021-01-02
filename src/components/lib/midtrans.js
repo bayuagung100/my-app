@@ -66,10 +66,14 @@ export default class SnapMidtrans extends PureComponent {
                             this.state.token,
                             /** @todo options **/
                             {
-                                onSuccess: function (result) { console.log('success'); console.log(result); },
-                                onPending: function (result) { console.log('pending'); console.log(result); },
-                                onError: function (result) { console.log('error'); console.log(result); },
-                                onClose: function () { console.log('customer closed the popup without finishing the payment'); }
+                                onSuccess: function (result) {
+                                    // console.log('success');
+                                    // console.log(result);
+                                    window.location.href = result.finish_redirect_url
+                                },
+                                // onPending: function (result) { console.log('pending'); console.log(result); },
+                                // onError: function (result) { console.log('error'); console.log(result); },
+                                // onClose: function () { console.log('customer closed the popup without finishing the payment'); }
                             }
                         )
                     }

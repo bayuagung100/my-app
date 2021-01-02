@@ -9,6 +9,12 @@ import $ from 'jquery';
 import Midtrans from '../../../lib/midtrans';
 import { Redirect } from 'react-router-dom';
 import Loader from 'react-loader-spinner';
+import Datetime from "react-datetime";
+import "react-datetime/css/react-datetime.css";
+
+import 'react-phone-number-input/style.css'
+import PhoneInput from 'react-phone-number-input'
+
 
 
 
@@ -87,6 +93,10 @@ class PersonalInfo extends Component {
         this.onPending = this.onPending.bind(this);
         this.onError = this.onError.bind(this);
         this.onClose = this.onClose.bind(this);
+
+        this.phoneChange = this.phoneChange.bind(this);
+        this.dobChange = this.dobChange.bind(this);
+        this.checkChange = this.checkChange.bind(this);
     }
     onChange(e) {
         let newPersonal = { ...this.state.personalInfo };
@@ -94,7 +104,59 @@ class PersonalInfo extends Component {
         this.setState({
             personalInfo: newPersonal
 
-        })
+        }, () => console.log(this.state.personalInfo))
+    }
+    phoneChange(e){
+        if(e !== undefined){
+            // console.log(e)
+            this.setState({
+                personalInfo: {
+                    ...this.state.personalInfo,
+                    phone: e
+                }
+            })
+        } else {
+            this.setState({
+                personalInfo: {
+                    ...this.state.personalInfo,
+                    phone: null
+                }
+            })
+        }
+    }
+    dobChange(e) {
+        // console.log(e);
+        if (e._isValid) {
+            var date = e._d;
+            var dd = String(date.getDate()).padStart(2, '0');
+            var mm = String(date.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = date.getFullYear();
+            date = dd + '-' + mm + '-' + yyyy;
+
+            this.setState({
+                personalInfo: {
+                    ...this.state.personalInfo,
+                    dob: date
+                }
+            })
+        }
+    }
+    checkChange(e) {
+        // console.log(e);
+        if (e._isValid) {
+            var date = e._d;
+            var dd = String(date.getDate()).padStart(2, '0');
+            var mm = String(date.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = date.getFullYear();
+            date = dd + '-' + mm + '-' + yyyy;
+
+            this.setState({
+                personalInfo: {
+                    ...this.state.personalInfo,
+                    check_date: date
+                }
+            })
+        }
     }
     onSubmit(e) {
         e.preventDefault();
@@ -105,8 +167,8 @@ class PersonalInfo extends Component {
         }
         this.setState({
             personalInfo: newPersonal,
-        })
-
+        }, () => console.log(this.state.personalInfo))
+        var pattern = new RegExp(/^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i);
         if (this.state.personalInfo.firstname === "" || this.state.personalInfo.firstname === null) {
             this.setState({
                 modalAlert: true,
@@ -142,11 +204,6 @@ class PersonalInfo extends Component {
                 modalAlert: true,
                 modalAlertMessage: "Alamat Tidak Boleh Kosong!"
             })
-        } else if (this.state.personalInfo.address === "" || this.state.personalInfo.address === null) {
-            this.setState({
-                modalAlert: true,
-                modalAlertMessage: "Alamat Tidak Boleh Kosong!"
-            })
         } else if (this.state.personalInfo.test_name === "" || this.state.personalInfo.test_name === null) {
             this.setState({
                 modalAlert: true,
@@ -167,10 +224,15 @@ class PersonalInfo extends Component {
                 modalAlert: true,
                 modalAlertMessage: "Tanggal Periksa Tidak Boleh Kosong!"
             })
-        } else if (this.state.personalInfo.slot === "" || this.state.personalInfo.slot === null) {
+        } else if (this.state.personalInfo.slot === "" || this.state.personalInfo.slot === null || this.state.personalInfo.slot === 0) {
             this.setState({
                 modalAlert: true,
                 modalAlertMessage: "Slot Tidak Boleh Kosong!"
+            })
+        } else if (!pattern.test(this.state.personalInfo.email)) {
+            this.setState({
+                modalAlert: true,
+                modalAlertMessage: "Email yang anda masukkan tidak valid!"
             })
         } else {
             this.setState({
@@ -247,6 +309,8 @@ class PersonalInfo extends Component {
                 selectedBranch_bio: selected,
                 check_hours: null,
                 selectedCheck_hours: null,
+                slot: "",
+                id_slot: null,
             }
         });
 
@@ -344,26 +408,47 @@ class PersonalInfo extends Component {
                 return response.data;
             })
             .then(response => {
+                console.log(response)
                 const midtransToken = response.token;
                 const midtransclientKey = response.clientKey;
                 const midtransredirectUrl = response.redirectUrl;
 
-                this.setState({
-                    // midtrans: {
-                    //     token: midtransToken,
-                    //     clientKey: midtransclientKey,
-                    //     redirectUrl: midtransredirectUrl,
-                    // }
-                    loader: false,
-                    midtrans: response
-                }, () => console.log(this.state.midtrans))
+                if (response.status === 202 || response.status === 204) {
+                    this.setState({
+                        loader: false,
+                        modalConfirm: false,
+                        modalAlert: true,
+                        modalAlertMessage: response.message
+                    })
+                } else {
+                    this.setState({
+                        // midtrans: {
+                        //     token: midtransToken,
+                        //     clientKey: midtransclientKey,
+                        //     redirectUrl: midtransredirectUrl,
+                        // }
+                        loader: false,
+                        midtrans: response
+                    })
+                }
+
 
                 // this.pay.current.click();
 
             })
-            .catch(function (error) {
+            // .catch(function (error) {
+            //     console.log(error)
+            //     return error;
+            // })
+            .catch(error => {
                 console.log(error);
-            });
+                this.setState({
+                    loader: false,
+                    modalConfirm: false,
+                    modalAlert: true,
+                    modalAlertMessage: "Terjadi Kesalahan."
+                })
+            })
 
 
 
@@ -457,7 +542,18 @@ class PersonalInfo extends Component {
                             <div className="row row-sm form-group">
                                 <div className="col-md-6 col-lg-6">
                                     <label className="form-control-label">No Hp / Telepon: <span className="tx-danger">*</span></label>
-                                    <input className="form-control" name="phone" type="tel" value={this.state.personalInfo.phone} placeholder="Enter Hp" onChange={this.onChange} required />
+                                    {/* <input className="form-control" name="phone" type="tel" value={this.state.personalInfo.phone} placeholder="Enter Hp" onChange={this.onChange} required /> */}
+                                    <PhoneInput
+                                        // className="form-control"
+                                        // name="phone"
+                                        type="tel"
+                                        placeholder="Enter phone number"
+                                        defaultCountry="ID"
+                                        international={false}
+                                        value={this.state.personalInfo.phone}
+                                        onChange={this.phoneChange}
+                                        required
+                                    />
                                 </div>
                                 <div className="col-md-6 col-lg-6 mg-t-20 mg-md-t-0">
                                     <label className="form-control-label">Email: <span className="tx-danger">*</span></label>
@@ -482,12 +578,19 @@ class PersonalInfo extends Component {
                                 </div>
                                 <div className="col-md-6 col-lg-6 mg-t-20 mg-md-t-0">
                                     <label className="form-control-label">Tanggal Lahir: <span className="tx-danger">*</span></label>
-                                    <input className="form-control" name="dob" type="date" value={this.state.personalInfo.dob} required />
+                                    {/* <input className="form-control" name="dob" type="date" format="dd-mm-yyyy" value={this.state.personalInfo.dob} required /> */}
+                                    <Datetime
+                                        initialViewDate={new Date()}
+                                        dateFormat="DD-MM-YYYY"
+                                        timeFormat={false}
+                                        onChange={this.dobChange}
+                                        inputProps={{ name: "dob", placeholder: "dd-mm-yyyy", required: true }}
+                                    />
                                 </div>
                             </div>
                             <div className="form-group">
                                 <label className="form-control-label">Alamat: <span className="tx-danger">*</span></label>
-                                <textarea className="form-control" name="address" value={this.state.personalInfo.address} placeholder="Enter Address" required />
+                                <textarea className="form-control" name="address" value={this.state.personalInfo.address} placeholder="Enter Address" onChange={this.onChange} required />
                             </div>
                             <div className="form-group">
                                 <label className="form-control-label">Jenis Test: <span className="tx-danger">*</span></label>
@@ -501,6 +604,17 @@ class PersonalInfo extends Component {
                             </div>
                             <div className="row row-sm form-group">
                                 <div className="col-md-6 col-lg-6">
+                                    <label className="form-control-label">Tanggal Periksa: <span className="tx-danger">*</span></label>
+                                    {/* <input className="form-control" name="check_date" type="date" value={this.state.personalInfo.check_date} required /> */}
+                                    <Datetime
+                                        initialViewDate={new Date()}
+                                        dateFormat="DD-MM-YYYY"
+                                        timeFormat={false}
+                                        onChange={this.checkChange}
+                                        inputProps={{ name: "check_date", placeholder: "dd-mm-yyyy", required: true }}
+                                    />
+                                </div>
+                                <div className="col-md-6 col-lg-6">
                                     <label className="form-control-label">Cabang Bio Medika: <span className="tx-danger">*</span></label>
                                     {/* <input className="form-control" name="branch_bio" type="text" /> */}
                                     <Select
@@ -511,6 +625,9 @@ class PersonalInfo extends Component {
                                         options={this.state.cabang}
                                     />
                                 </div>
+
+                            </div>
+                            <div className="row row-sm form-group">
                                 <div className="col-md-6 col-lg-6 mg-t-20 mg-md-t-0">
                                     <label className="form-control-label">Jam Tersedia: <span className="tx-danger">*</span></label>
                                     {/* <input className="form-control" name="check_hours" type="text" /> */}
@@ -519,14 +636,9 @@ class PersonalInfo extends Component {
                                         placeholder='Pilih Jam'
                                         value={this.state.personalInfo.selectedCheck_hours}
                                         onChange={this.jamChange}
-                                        options={this.state.jam}
+                                        isDisabled={this.state.jam === null ? true : false}
+                                        options={this.state.jam ? this.state.jam : []}
                                     />
-                                </div>
-                            </div>
-                            <div className="row row-sm form-group">
-                                <div className="col-md-6 col-lg-6">
-                                    <label className="form-control-label">Tanggal Periksa: <span className="tx-danger">*</span></label>
-                                    <input className="form-control" name="check_date" type="date" value={this.state.personalInfo.check_date} required />
                                 </div>
                                 <div className="col-md-6 col-lg-6 mg-t-20 mg-md-t-0">
                                     <label className="form-control-label">Slot Tersedia : <span className="tx-danger">*</span></label>

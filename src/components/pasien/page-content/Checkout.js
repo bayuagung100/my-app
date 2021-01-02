@@ -3,6 +3,26 @@ import { uAPIlocal } from '../../lib/config';
 import axios from 'axios';
 import Midtrans from '../../lib/midtrans';
 import Loader from 'react-loader-spinner';
+import { Redirect } from 'react-router-dom';
+
+/* Fungsi formatRupiah */
+function formatRupiah(angka, prefix) {
+    var separator;
+    var number_string = angka.replace(/[^,\d]/g, '').toString(),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+    // tambahkan titik jika yang di input sudah menjadi angka ribuan
+    if (ribuan) {
+        separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return prefix == undefined ? rupiah : (rupiah ? 'Rp. ' + rupiah : '');
+}
 
 class Checkout extends Component {
     constructor(props) {
@@ -49,9 +69,17 @@ class Checkout extends Component {
 
     componentDidMount() {
         // console.log(this.props);
-        this.getData();
+        // this.getData();
+        if (this.state.midtrans !== null) {
+            this.getData();
+        } 
     }
     render() {
+        if (this.state.midtrans === null) {
+            return (<Redirect to={{
+                pathname: "/",
+            }} />)
+        }
         return (
             <div className="container" style={{ marginTop: '1.3rem' }}>
                 <div className="card">
@@ -112,12 +140,12 @@ class Checkout extends Component {
                                                     <tbody>
                                                         <tr>
                                                             <td>{this.state.orderDetail.jenisTest}</td>
-                                                            <td className="text-right">Rp {this.state.orderDetail.price}</td>
+                                                            <td className="text-right">{formatRupiah(this.state.orderDetail.price, 'Rp. ')}</td>
                                                         </tr>
                                                         <tr>
                                                             <td><span>Order Total</span></td>
                                                             <td>
-                                                                <h2 className="price text-right mb-0">Rp {this.state.orderDetail.totalPrice}</h2>
+                                                                <h2 className="price text-right mb-0">{formatRupiah(this.state.orderDetail.totalPrice, 'Rp. ')}</h2>
                                                             </td>
                                                         </tr>
                                                     </tbody>
